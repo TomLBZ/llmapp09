@@ -49,7 +49,13 @@ def test_schema_proxy_repairs_trailing_comma_json():
     assert parsed.steps == ["first", "second"]
 
 
-def test_schema_proxy_preserves_original_error_when_repair_fails():
+def test_schema_proxy_raises_when_repaired_json_still_invalid():
     raw = '{"steps": ["first", ], "extra": }'
+    with pytest.raises(ValidationError):
+        conftest._schema_with_sanitized_json(_Steps).model_validate_json(raw)
+
+
+def test_schema_proxy_raises_when_invalid_json_has_no_trailing_commas():
+    raw = '{"steps": ["first", "second"'
     with pytest.raises(ValidationError):
         conftest._schema_with_sanitized_json(_Steps).model_validate_json(raw)
