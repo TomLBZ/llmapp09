@@ -17,7 +17,8 @@ on:
 
 env:
   OLLAMA_API_KEY: ${{ secrets.OLLAMA_API_KEY }}
-  OLLAMA_BASE_URL: ${{ secrets.OLLAMA_BASE_URL }}
+  OLLAMA_BASE_URL: ${{ secrets.OLLAMA_BASE_URL || 'http://localhost:11434' }}
+  OLLAMA_JUDGE_MODEL: llama3.2
 
 jobs:
   deepeval:
@@ -51,14 +52,13 @@ jobs:
 
       - name: Pull Ollama judge model
         run: |
-          # Replace 'llama3.2' or 'qwen2.5:3b' with your desired model
-          ollama pull llama3.2
+          ollama pull "$OLLAMA_JUDGE_MODEL"
 
       - name: Ensure DeepEval uses Ollama instead of OpenAI
         run: |
           unset OPENAI_API_KEY
           env | grep -E '^(OPENAI|OLLAMA)_' || true
-          deepeval set-ollama --model=glm-5.3-flash:cloud
+          deepeval set-ollama --model="$OLLAMA_JUDGE_MODEL"
           
       - name: Wait for backend to be ready
         run: |
