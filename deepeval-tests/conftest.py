@@ -9,8 +9,8 @@ from deepeval.metrics import GEval
 from deepeval.models import OllamaModel
 from deepeval.test_case import LLMTestCaseParams
 
-OLLAMA_BASE_URL = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
-OLLAMA_JUDGE_MODEL_NAME = os.getenv("OLLAMA_JUDGE_MODEL", "llama3.2")
+OLLAMA_BASE_URL = os.getenv("OLLAMA_BASE_URL", "https://ollama.com")
+OLLAMA_JUDGE_MODEL_NAME = os.getenv("OLLAMA_JUDGE_MODEL", "glm-5.3-flash:cloud")
 OLLAMA_JUDGE_MODEL = OllamaModel(
     model=OLLAMA_JUDGE_MODEL_NAME,
     base_url=OLLAMA_BASE_URL,
