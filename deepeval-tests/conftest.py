@@ -50,7 +50,7 @@ class _SchemaProxy:
         sanitized = _strip_markdown_code_fence_text(content)
         try:
             return self._schema.model_validate_json(sanitized)
-        except Exception:
+        except ValueError:
             repaired = _remove_trailing_json_commas(sanitized)
             if repaired != sanitized:
                 return self._schema.model_validate_json(repaired)
