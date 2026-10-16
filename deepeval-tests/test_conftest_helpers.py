@@ -30,3 +30,7 @@ def test_schema_proxy_handles_fenced_json_for_schema():
     raw = '```json\n{"steps": ["first", "second"]}\n```'
     parsed = conftest._schema_with_sanitized_json(_Steps).model_validate_json(raw)
     assert parsed.steps == ["first", "second"]
+
+
+def test_schema_proxy_none_passthrough():
+    assert conftest._schema_with_sanitized_json(None) is None

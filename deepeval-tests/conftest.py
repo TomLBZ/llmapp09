@@ -44,19 +44,19 @@ def _schema_with_sanitized_json(schema):
 
 
 class StableOllamaModel(OllamaModel):
-    def generate(self, prompt, schema=None, audio=None):
+    def generate(self, prompt, schema=None, **kwargs):
         result = super().generate(
             prompt=prompt,
             schema=_schema_with_sanitized_json(schema),
-            audio=audio,
+            **kwargs,
         )
         return _strip_markdown_code_fence(result)
 
-    async def a_generate(self, prompt, schema=None, audio=None):
+    async def a_generate(self, prompt, schema=None, **kwargs):
         result = await super().a_generate(
             prompt=prompt,
             schema=_schema_with_sanitized_json(schema),
-            audio=audio,
+            **kwargs,
         )
         return _strip_markdown_code_fence(result)
 
