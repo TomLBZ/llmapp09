@@ -30,6 +30,10 @@ def _strip_markdown_code_fence_text(value: str) -> str:
     return value
 
 
+def _remove_trailing_json_commas(value: str) -> str:
+    return re.sub(r",(\s*[}\]])", r"\1", value)
+
+
 class _SchemaProxy:
     def __init__(self, schema):
         self._schema = schema
@@ -43,7 +47,14 @@ class _SchemaProxy:
             content = content.decode("utf-8")
         if not isinstance(content, str):
             raise TypeError("model_validate_json content must be str/bytes")
-        return self._schema.model_validate_json(_strip_markdown_code_fence_text(content))
+        sanitized = _strip_markdown_code_fence_text(content)
+        try:
+            return self._schema.model_validate_json(sanitized)
+        except Exception:
+            repaired = _remove_trailing_json_commas(sanitized)
+            if repaired != sanitized:
+                return self._schema.model_validate_json(repaired)
+            raise
 
 
 def _schema_with_sanitized_json(schema):

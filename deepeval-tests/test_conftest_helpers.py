@@ -40,3 +40,9 @@ def test_schema_proxy_none_passthrough():
 def test_schema_proxy_rejects_non_string_json_content():
     with pytest.raises(TypeError):
         conftest._schema_with_sanitized_json(_Steps).model_validate_json(123)
+
+
+def test_schema_proxy_repairs_trailing_comma_json():
+    raw = '{\n  "steps": ["first", "second"],\n}'
+    parsed = conftest._schema_with_sanitized_json(_Steps).model_validate_json(raw)
+    assert parsed.steps == ["first", "second"]
