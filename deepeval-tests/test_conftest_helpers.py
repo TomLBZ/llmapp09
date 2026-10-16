@@ -1,4 +1,9 @@
 import conftest
+from pydantic import BaseModel
+
+
+class _Steps(BaseModel):
+    steps: list[str]
 
 
 def test_strip_markdown_code_fence_handles_json_fence():
@@ -19,3 +24,9 @@ def test_strip_markdown_code_fence_keeps_plain_text():
 def test_strip_markdown_code_fence_keeps_plain_tuple_text():
     raw = ('{"ok": true}', 0.01)
     assert conftest._strip_markdown_code_fence(raw) == raw
+
+
+def test_sanitize_and_parse_handles_fenced_json_for_schema():
+    raw = '```json\n{"steps": ["first", "second"]}\n```'
+    parsed = conftest._sanitize_and_parse(raw, _Steps)
+    assert parsed.steps == ["first", "second"]

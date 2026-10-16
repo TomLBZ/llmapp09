@@ -26,14 +26,49 @@ def _strip_markdown_code_fence(value):
     return value
 
 
+def _sanitize_and_parse(content, schema=None):
+    sanitized = _strip_markdown_code_fence(content)
+    if schema:
+        return schema.model_validate_json(sanitized)
+    return sanitized
+
+
 class StableOllamaModel(OllamaModel):
     def generate(self, *args, **kwargs):
-        result = super().generate(*args, **kwargs)
-        return _strip_markdown_code_fence(result)
+        prompt = kwargs.get("prompt", args[0] if args else None)
+        schema = kwargs.get("schema")
+        audio = kwargs.get("audio")
+
+        chat_model = self.load_model()
+        messages = self._prompt_messages(prompt, audio)
+        response = chat_model.chat(
+            model=self.name,
+            messages=messages,
+            format=schema.model_json_schema() if schema else None,
+            options={
+                **{"temperature": self.temperature},
+                **self.generation_kwargs,
+            },
+        )
+        return (_sanitize_and_parse(response.message.content, schema), 0)
 
     async def a_generate(self, *args, **kwargs):
-        result = await super().a_generate(*args, **kwargs)
-        return _strip_markdown_code_fence(result)
+        prompt = kwargs.get("prompt", args[0] if args else None)
+        schema = kwargs.get("schema")
+        audio = kwargs.get("audio")
+
+        chat_model = self.load_model(async_mode=True)
+        messages = self._prompt_messages(prompt, audio)
+        response = await chat_model.chat(
+            model=self.name,
+            messages=messages,
+            format=schema.model_json_schema() if schema else None,
+            options={
+                **{"temperature": self.temperature},
+                **self.generation_kwargs,
+            },
+        )
+        return (_sanitize_and_parse(response.message.content, schema), 0)
 
 
 OLLAMA_JUDGE_MODEL = StableOllamaModel(
