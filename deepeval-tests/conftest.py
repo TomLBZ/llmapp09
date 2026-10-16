@@ -9,6 +9,7 @@ import pytest
 from deepeval.metrics import GEval
 from deepeval.models import OllamaModel
 from deepeval.test_case import LLMTestCaseParams
+from pydantic import ValidationError
 
 OLLAMA_BASE_URL = os.getenv("OLLAMA_BASE_URL", "https://ollama.com")
 OLLAMA_JUDGE_MODEL_NAME = os.getenv("OLLAMA_JUDGE_MODEL", "glm-5.3-flash:cloud")
@@ -50,7 +51,9 @@ class _SchemaProxy:
         sanitized = _strip_markdown_code_fence_text(content)
         try:
             return self._schema.model_validate_json(sanitized)
-        except ValueError:
+        except ValidationError as exc:
+            if "Invalid JSON" not in str(exc):
+                raise
             repaired = _remove_trailing_json_commas(sanitized)
             if repaired != sanitized:
                 return self._schema.model_validate_json(repaired)
