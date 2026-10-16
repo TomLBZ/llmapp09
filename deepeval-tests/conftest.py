@@ -30,8 +30,8 @@ class _SchemaProxy:
     def __init__(self, schema):
         self._schema = schema
 
-    def model_json_schema(self):
-        return self._schema.model_json_schema()
+    def __getattr__(self, attr):
+        return getattr(self._schema, attr)
 
     def model_validate_json(self, content):
         return self._schema.model_validate_json(_strip_markdown_code_fence(content))
