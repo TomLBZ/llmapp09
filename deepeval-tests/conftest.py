@@ -52,11 +52,14 @@ class _SchemaProxy:
         try:
             return self._schema.model_validate_json(sanitized)
         except ValidationError as exc:
-            if "Invalid JSON" not in str(exc):
+            if not any(error.get("type") == "json_invalid" for error in exc.errors()):
                 raise
             repaired = _remove_trailing_json_commas(sanitized)
             if repaired != sanitized:
-                return self._schema.model_validate_json(repaired)
+                try:
+                    return self._schema.model_validate_json(repaired)
+                except ValidationError:
+                    raise exc
             raise
 
 
