@@ -20,7 +20,7 @@ def _strip_markdown_code_fence(value):
     if not isinstance(value, str):
         return value
     stripped = value.strip()
-    match = re.fullmatch(r"```(?:json)?\s*(.*?)\s*```", stripped, flags=re.DOTALL)
+    match = re.fullmatch(r"```(?:[a-zA-Z0-9_+-]+)?\s*(.*?)\s*```", stripped, flags=re.DOTALL)
     if match:
         return match.group(1).strip()
     return value
