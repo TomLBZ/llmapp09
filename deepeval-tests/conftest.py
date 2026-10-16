@@ -34,6 +34,10 @@ class _SchemaProxy:
         return getattr(self._schema, attr)
 
     def model_validate_json(self, content):
+        if isinstance(content, (bytes, bytearray)):
+            content = content.decode("utf-8")
+        if not isinstance(content, str):
+            raise TypeError("model_validate_json content must be str/bytes")
         return self._schema.model_validate_json(_strip_markdown_code_fence(content))
 
 

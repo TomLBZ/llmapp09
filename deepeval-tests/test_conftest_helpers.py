@@ -1,4 +1,5 @@
 import conftest
+import pytest
 from pydantic import BaseModel
 
 
@@ -34,3 +35,8 @@ def test_schema_proxy_handles_fenced_json_for_schema():
 
 def test_schema_proxy_none_passthrough():
     assert conftest._schema_with_sanitized_json(None) is None
+
+
+def test_schema_proxy_rejects_non_string_json_content():
+    with pytest.raises(TypeError):
+        conftest._schema_with_sanitized_json(_Steps).model_validate_json(123)
