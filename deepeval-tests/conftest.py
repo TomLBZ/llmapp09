@@ -3,6 +3,7 @@ Shared fixtures and configuration for deepeval LLM evaluation tests.
 """
 
 import os
+import re
 
 import pytest
 from deepeval.metrics import GEval
@@ -11,7 +12,31 @@ from deepeval.test_case import LLMTestCaseParams
 
 OLLAMA_BASE_URL = os.getenv("OLLAMA_BASE_URL", "https://ollama.com")
 OLLAMA_JUDGE_MODEL_NAME = os.getenv("OLLAMA_JUDGE_MODEL", "glm-5.3-flash:cloud")
-OLLAMA_JUDGE_MODEL = OllamaModel(
+
+
+def _strip_markdown_code_fence(value):
+    if isinstance(value, tuple) and value:
+        return (_strip_markdown_code_fence(value[0]), *value[1:])
+    if not isinstance(value, str):
+        return value
+    stripped = value.strip()
+    match = re.fullmatch(r"```(?:json)?\s*(.*?)\s*```", stripped, flags=re.DOTALL)
+    if match:
+        return match.group(1).strip()
+    return value
+
+
+class StableOllamaModel(OllamaModel):
+    def generate(self, *args, **kwargs):
+        result = super().generate(*args, **kwargs)
+        return _strip_markdown_code_fence(result)
+
+    async def a_generate(self, *args, **kwargs):
+        result = await super().a_generate(*args, **kwargs)
+        return _strip_markdown_code_fence(result)
+
+
+OLLAMA_JUDGE_MODEL = StableOllamaModel(
     model=OLLAMA_JUDGE_MODEL_NAME,
     base_url=OLLAMA_BASE_URL,
 )
