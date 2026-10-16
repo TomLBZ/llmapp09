@@ -3,15 +3,91 @@ Shared fixtures and configuration for deepeval LLM evaluation tests.
 """
 
 import os
+import re
 
 import pytest
 from deepeval.metrics import GEval
 from deepeval.models import OllamaModel
 from deepeval.test_case import LLMTestCaseParams
+from pydantic import ValidationError
 
 OLLAMA_BASE_URL = os.getenv("OLLAMA_BASE_URL", "https://ollama.com")
 OLLAMA_JUDGE_MODEL_NAME = os.getenv("OLLAMA_JUDGE_MODEL", "glm-5.3-flash:cloud")
-OLLAMA_JUDGE_MODEL = OllamaModel(
+
+
+def _strip_markdown_code_fence(value):
+    if isinstance(value, tuple) and value:
+        return (_strip_markdown_code_fence(value[0]), *value[1:])
+    if not isinstance(value, str):
+        return value
+    return _strip_markdown_code_fence_text(value)
+
+
+def _strip_markdown_code_fence_text(value: str) -> str:
+    stripped = value.strip()
+    match = re.fullmatch(r"```(?:[a-zA-Z0-9_+-]+)?\s*(.*?)\s*```", stripped, flags=re.DOTALL)
+    if match:
+        return match.group(1).strip()
+    return value
+
+
+def _remove_trailing_json_commas(value: str) -> str:
+    return re.sub(r",(\s*[}\]])", r"\1", value)
+
+
+class _SchemaProxy:
+    def __init__(self, schema):
+        self._schema = schema
+
+    def __getattr__(self, attr):
+        schema = object.__getattribute__(self, "_schema")
+        return getattr(schema, attr)
+
+    def model_validate_json(self, content):
+        if isinstance(content, (bytes, bytearray)):
+            content = content.decode("utf-8")
+        if not isinstance(content, str):
+            raise TypeError("model_validate_json content must be str/bytes")
+        sanitized = _strip_markdown_code_fence_text(content)
+        try:
+            return self._schema.model_validate_json(sanitized)
+        except ValidationError as exc:
+            if not any(error.get("type") == "json_invalid" for error in exc.errors()):
+                raise
+            repaired = _remove_trailing_json_commas(sanitized)
+            if repaired != sanitized:
+                try:
+                    return self._schema.model_validate_json(repaired)
+                except ValidationError as repair_exc:
+                    raise exc from repair_exc
+            raise
+
+
+def _schema_with_sanitized_json(schema):
+    if schema is None:
+        return None
+    return _SchemaProxy(schema)
+
+
+class StableOllamaModel(OllamaModel):
+    def generate(self, prompt, schema=None, **kwargs):
+        result = super().generate(
+            prompt=prompt,
+            schema=_schema_with_sanitized_json(schema),
+            **kwargs,
+        )
+        return _strip_markdown_code_fence(result)
+
+    async def a_generate(self, prompt, schema=None, **kwargs):
+        result = await super().a_generate(
+            prompt=prompt,
+            schema=_schema_with_sanitized_json(schema),
+            **kwargs,
+        )
+        return _strip_markdown_code_fence(result)
+
+
+OLLAMA_JUDGE_MODEL = StableOllamaModel(
     model=OLLAMA_JUDGE_MODEL_NAME,
     base_url=OLLAMA_BASE_URL,
 )
