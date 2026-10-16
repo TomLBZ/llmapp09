@@ -59,7 +59,7 @@ class _SchemaProxy:
                 try:
                     return self._schema.model_validate_json(repaired)
                 except ValidationError as repair_exc:
-                    raise exc from repair_exc
+                    raise repair_exc from exc
             raise
 
 
