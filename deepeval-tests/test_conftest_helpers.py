@@ -26,7 +26,7 @@ def test_strip_markdown_code_fence_keeps_plain_tuple_text():
     assert conftest._strip_markdown_code_fence(raw) == raw
 
 
-def test_sanitize_and_parse_handles_fenced_json_for_schema():
+def test_schema_proxy_handles_fenced_json_for_schema():
     raw = '```json\n{"steps": ["first", "second"]}\n```'
-    parsed = conftest._sanitize_and_parse(raw, _Steps)
+    parsed = conftest._schema_with_sanitized_json(_Steps).model_validate_json(raw)
     assert parsed.steps == ["first", "second"]
