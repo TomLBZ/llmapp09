@@ -19,6 +19,10 @@ def _strip_markdown_code_fence(value):
         return (_strip_markdown_code_fence(value[0]), *value[1:])
     if not isinstance(value, str):
         return value
+    return _strip_markdown_code_fence_text(value)
+
+
+def _strip_markdown_code_fence_text(value: str) -> str:
     stripped = value.strip()
     match = re.fullmatch(r"```(?:[a-zA-Z0-9_+-]+)?\s*(.*?)\s*```", stripped, flags=re.DOTALL)
     if match:
@@ -31,14 +35,15 @@ class _SchemaProxy:
         self._schema = schema
 
     def __getattr__(self, attr):
-        return getattr(self._schema, attr)
+        schema = object.__getattribute__(self, "_schema")
+        return getattr(schema, attr)
 
     def model_validate_json(self, content):
         if isinstance(content, (bytes, bytearray)):
             content = content.decode("utf-8")
         if not isinstance(content, str):
             raise TypeError("model_validate_json content must be str/bytes")
-        return self._schema.model_validate_json(_strip_markdown_code_fence(content))
+        return self._schema.model_validate_json(_strip_markdown_code_fence_text(content))
 
 
 def _schema_with_sanitized_json(schema):
