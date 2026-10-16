@@ -1,6 +1,7 @@
 import conftest
 import pytest
 from pydantic import BaseModel
+from pydantic import ValidationError
 
 
 class _Steps(BaseModel):
@@ -46,3 +47,9 @@ def test_schema_proxy_repairs_trailing_comma_json():
     raw = '{\n  "steps": ["first", "second"],\n}'
     parsed = conftest._schema_with_sanitized_json(_Steps).model_validate_json(raw)
     assert parsed.steps == ["first", "second"]
+
+
+def test_schema_proxy_preserves_original_error_when_repair_fails():
+    raw = '{"steps": ["first", ]'
+    with pytest.raises(ValidationError):
+        conftest._schema_with_sanitized_json(_Steps).model_validate_json(raw)

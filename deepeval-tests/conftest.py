@@ -58,8 +58,8 @@ class _SchemaProxy:
             if repaired != sanitized:
                 try:
                     return self._schema.model_validate_json(repaired)
-                except ValidationError:
-                    raise exc
+                except ValidationError as repair_exc:
+                    raise exc from repair_exc
             raise
 
 
