@@ -58,7 +58,7 @@ jobs:
         run: |
           unset OPENAI_API_KEY
           env | grep -E '^(OPENAI|OLLAMA)_' || true
-          deepeval set-ollama --model=llama3.2
+          deepeval set-ollama --model=glm-5.3-flash:cloud
           
       - name: Wait for backend to be ready
         run: |
