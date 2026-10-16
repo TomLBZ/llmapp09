@@ -12,8 +12,9 @@ from deepeval.test_case import LLMTestCase, LLMTestCaseParams
 from deepeval.metrics import GEval
 from deepeval.dataset import EvaluationDataset
 
+import conftest
+
 from api_client import summarize_text
-from conftest import json_schema_metric, output_correctness_metric, answer_relevancy_metric
 
 
 # ---------------------------------------------------------------------------
@@ -154,10 +155,11 @@ SCHEMA_DESC = (
     "strings), and 'wordCount' (integer)."
 )
 
-summarize_schema_metric = json_schema_metric(SCHEMA_DESC)
+summarize_schema_metric = conftest.json_schema_metric(SCHEMA_DESC)
 
 summarize_correctness_metric = GEval(
     name="Summary Correctness",
+    model=conftest.OLLAMA_JUDGE_MODEL,
     criteria=(
         "Evaluate whether the summary accurately captures the main ideas of "
         "the input text without introducing information that is not present "
@@ -175,6 +177,7 @@ summarize_correctness_metric = GEval(
 
 summarize_conciseness_metric = GEval(
     name="Summary Conciseness",
+    model=conftest.OLLAMA_JUDGE_MODEL,
     criteria=(
         "Evaluate whether the summary is concise and avoids unnecessary "
         "verbosity. A good summary should be significantly shorter than the "
@@ -190,6 +193,7 @@ summarize_conciseness_metric = GEval(
 
 summarize_faithfulness_metric = GEval(
     name="Summary Faithfulness",
+    model=conftest.OLLAMA_JUDGE_MODEL,
     criteria=(
         "Evaluate whether every claim in the summary is supported by the "
         "original input text. The summary should not contain any hallucinated "
@@ -203,7 +207,7 @@ summarize_faithfulness_metric = GEval(
     threshold=0.8,
 )
 
-summarize_relevancy_metric = answer_relevancy_metric()
+summarize_relevancy_metric = conftest.answer_relevancy_metric()
 
 
 # ---------------------------------------------------------------------------

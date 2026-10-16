@@ -12,8 +12,9 @@ from deepeval.test_case import LLMTestCase, LLMTestCaseParams
 from deepeval.metrics import GEval
 from deepeval.dataset import EvaluationDataset
 
+import conftest
+
 from api_client import analyze_sentiment
-from conftest import json_schema_metric, output_correctness_metric, answer_relevancy_metric
 
 
 # ---------------------------------------------------------------------------
@@ -114,10 +115,11 @@ SCHEMA_DESC = (
     "(array of strings), and 'confidence' (number between 0 and 1)."
 )
 
-sentiment_schema_metric = json_schema_metric(SCHEMA_DESC)
+sentiment_schema_metric = conftest.json_schema_metric(SCHEMA_DESC)
 
 sentiment_correctness_metric = GEval(
     name="Sentiment Correctness",
+    model=conftest.OLLAMA_JUDGE_MODEL,
     criteria=(
         "Evaluate whether the sentiment analysis is accurate for the input text. "
         "Check that: (1) overallSentiment correctly identifies the dominant "
@@ -136,6 +138,7 @@ sentiment_correctness_metric = GEval(
 
 sentiment_emotion_metric = GEval(
     name="Emotion Detection Accuracy",
+    model=conftest.OLLAMA_JUDGE_MODEL,
     criteria=(
         "Evaluate whether the emotions detected in the actual output are "
         "reasonable and plausible for the given input text. The emotions "
@@ -149,7 +152,7 @@ sentiment_emotion_metric = GEval(
     threshold=0.6,
 )
 
-sentiment_relevancy_metric = answer_relevancy_metric()
+sentiment_relevancy_metric = conftest.answer_relevancy_metric()
 
 
 # ---------------------------------------------------------------------------

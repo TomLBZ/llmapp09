@@ -12,8 +12,9 @@ from deepeval.test_case import LLMTestCase, LLMTestCaseParams
 from deepeval.metrics import GEval
 from deepeval.dataset import EvaluationDataset
 
+import conftest
+
 from api_client import detect_intent
-from conftest import json_schema_metric, output_correctness_metric, answer_relevancy_metric
 
 
 # ---------------------------------------------------------------------------
@@ -118,10 +119,11 @@ SCHEMA_DESC = (
     "command, or statement), and 'confidence' (number between 0 and 1)."
 )
 
-intent_schema_metric = json_schema_metric(SCHEMA_DESC)
+intent_schema_metric = conftest.json_schema_metric(SCHEMA_DESC)
 
 intent_category_metric = GEval(
     name="Intent Category Accuracy",
+    model=conftest.OLLAMA_JUDGE_MODEL,
     criteria=(
         "Evaluate whether the intentCategory in the actual output correctly "
         "classifies the input text. Questions should be classified as "
@@ -139,6 +141,7 @@ intent_category_metric = GEval(
 
 intent_primary_metric = GEval(
     name="Primary Intent Accuracy",
+    model=conftest.OLLAMA_JUDGE_MODEL,
     criteria=(
         "Evaluate whether the primaryIntent in the actual output accurately "
         "describes the main purpose behind the input text. The detected intent "
@@ -153,7 +156,7 @@ intent_primary_metric = GEval(
     threshold=0.5,
 )
 
-intent_relevancy_metric = answer_relevancy_metric()
+intent_relevancy_metric = conftest.answer_relevancy_metric()
 
 
 # ---------------------------------------------------------------------------

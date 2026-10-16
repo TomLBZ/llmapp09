@@ -37,6 +37,7 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r deepeval-tests/requirements.txt
+          pip install ollama
 
       - name: Build and start backend
         run: docker compose up -d llm-multiroute

@@ -12,8 +12,9 @@ from deepeval.test_case import LLMTestCase, LLMTestCaseParams
 from deepeval.metrics import GEval
 from deepeval.dataset import EvaluationDataset
 
+import conftest
+
 from api_client import classify_text
-from conftest import json_schema_metric, output_correctness_metric, answer_relevancy_metric
 
 
 # ---------------------------------------------------------------------------
@@ -107,10 +108,11 @@ SCHEMA_DESC = (
     "'primaryCategory' (string), and 'confidence' (number between 0 and 1)."
 )
 
-classify_schema_metric = json_schema_metric(SCHEMA_DESC)
+classify_schema_metric = conftest.json_schema_metric(SCHEMA_DESC)
 
 classify_correctness_metric = GEval(
     name="Classification Correctness",
+    model=conftest.OLLAMA_JUDGE_MODEL,
     criteria=(
         "Evaluate whether the classification labels and primary category in the "
         "actual output are reasonable and accurate for the given input text. "
@@ -128,7 +130,7 @@ classify_correctness_metric = GEval(
     threshold=0.5,
 )
 
-classify_relevancy_metric = answer_relevancy_metric()
+classify_relevancy_metric = conftest.answer_relevancy_metric()
 
 
 # ---------------------------------------------------------------------------

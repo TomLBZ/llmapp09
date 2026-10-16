@@ -2,9 +2,17 @@
 Shared fixtures and configuration for deepeval LLM evaluation tests.
 """
 
+import os
+
 import pytest
 from deepeval.metrics import GEval
+from deepeval.models import OllamaModel
 from deepeval.test_case import LLMTestCaseParams
+
+OLLAMA_JUDGE_MODEL = OllamaModel(
+    model="llama3.2",
+    base_url=os.getenv("OLLAMA_BASE_URL", "http://localhost:11434"),
+)
 
 
 # ---------------------------------------------------------------------------
@@ -25,6 +33,7 @@ def json_schema_metric(schema_description: str):
             LLMTestCaseParams.ACTUAL_OUTPUT,
         ],
         threshold=0.5,
+        model=OLLAMA_JUDGE_MODEL,
     )
 
 
@@ -42,6 +51,7 @@ def output_correctness_metric():
             LLMTestCaseParams.ACTUAL_OUTPUT,
         ],
         threshold=0.5,
+        model=OLLAMA_JUDGE_MODEL,
     )
 
 
@@ -64,4 +74,5 @@ def answer_relevancy_metric():
             LLMTestCaseParams.ACTUAL_OUTPUT,
         ],
         threshold=0.5,
+        model=OLLAMA_JUDGE_MODEL,
     )
