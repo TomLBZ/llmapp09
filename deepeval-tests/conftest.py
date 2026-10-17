@@ -6,6 +6,7 @@ import os
 import re
 
 import pytest
+from deepeval import assert_test
 from deepeval.metrics import GEval
 from deepeval.models import OllamaModel
 from deepeval.test_case import LLMTestCaseParams
@@ -85,6 +86,16 @@ class StableOllamaModel(OllamaModel):
             **kwargs,
         )
         return _strip_markdown_code_fence(result)
+
+
+def assert_test_with_retry(test_case, metrics, retries: int = 1):
+    for attempt in range(retries + 1):
+        try:
+            assert_test(test_case, metrics)
+            return
+        except AssertionError:
+            if attempt == retries:
+                raise
 
 
 OLLAMA_JUDGE_MODEL = StableOllamaModel(

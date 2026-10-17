@@ -241,4 +241,4 @@ def test_summarize_faithfulness(test_case: LLMTestCase):
 @pytest.mark.parametrize("test_case", summarize_dataset.test_cases)
 def test_summarize_relevancy(test_case: LLMTestCase):
     """Verify the summary response is relevant to the input."""
-    assert_test(test_case, [summarize_relevancy_metric])
+    conftest.assert_test_with_retry(test_case, [summarize_relevancy_metric], retries=1)

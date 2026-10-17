@@ -59,3 +59,31 @@ def test_schema_proxy_raises_when_invalid_json_has_no_trailing_commas():
     raw = '{"steps": ["first", "second"'
     with pytest.raises(ValidationError):
         conftest._schema_with_sanitized_json(_Steps).model_validate_json(raw)
+
+
+def test_assert_test_with_retry_retries_once_and_succeeds(monkeypatch):
+    calls = {"count": 0}
+
+    def flaky_assert_test(*_args, **_kwargs):
+        calls["count"] += 1
+        if calls["count"] == 1:
+            raise AssertionError("flaky first failure")
+
+    monkeypatch.setattr(conftest, "assert_test", flaky_assert_test)
+    conftest.assert_test_with_retry(object(), [object()], retries=1)
+
+    assert calls["count"] == 2
+
+
+def test_assert_test_with_retry_raises_after_retries(monkeypatch):
+    calls = {"count": 0}
+
+    def always_fail_assert_test(*_args, **_kwargs):
+        calls["count"] += 1
+        raise AssertionError("persistent failure")
+
+    monkeypatch.setattr(conftest, "assert_test", always_fail_assert_test)
+    with pytest.raises(AssertionError, match="persistent failure"):
+        conftest.assert_test_with_retry(object(), [object()], retries=1)
+
+    assert calls["count"] == 2
