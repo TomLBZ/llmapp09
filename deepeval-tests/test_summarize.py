@@ -188,6 +188,8 @@ summarize_conciseness_metric = GEval(
         LLMTestCaseParams.INPUT,
         LLMTestCaseParams.ACTUAL_OUTPUT,
     ],
+    # CI judge scoring for this criterion is occasionally borderline (0.6-0.7)
+    # for otherwise acceptable concise summaries, so we keep a stability buffer.
     threshold=0.6,
 )
 
