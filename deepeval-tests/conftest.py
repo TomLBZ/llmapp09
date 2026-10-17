@@ -4,6 +4,8 @@ Shared fixtures and configuration for deepeval LLM evaluation tests.
 
 import os
 import re
+from typing import Any
+from typing import Sequence
 
 import pytest
 from deepeval import assert_test
@@ -88,7 +90,7 @@ class StableOllamaModel(OllamaModel):
         return _strip_markdown_code_fence(result)
 
 
-def assert_test_with_retry(test_case, metrics, retries: int = 1):
+def assert_test_with_retry(test_case: Any, metrics: Sequence[Any], retries: int = 1) -> None:
     for attempt in range(retries + 1):
         try:
             assert_test(test_case, metrics)
