@@ -4,8 +4,11 @@ Shared fixtures and configuration for deepeval LLM evaluation tests.
 
 import os
 import re
+from typing import Any
+from typing import Sequence
 
 import pytest
+from deepeval import assert_test
 from deepeval.metrics import GEval
 from deepeval.models import OllamaModel
 from deepeval.test_case import LLMTestCaseParams
@@ -85,6 +88,16 @@ class StableOllamaModel(OllamaModel):
             **kwargs,
         )
         return _strip_markdown_code_fence(result)
+
+
+def assert_test_with_retry(test_case: Any, metrics: Sequence[Any], retries: int = 1) -> None:
+    for attempt in range(retries + 1):
+        try:
+            assert_test(test_case, metrics)
+            return
+        except AssertionError:
+            if attempt == retries:
+                raise
 
 
 OLLAMA_JUDGE_MODEL = StableOllamaModel(
